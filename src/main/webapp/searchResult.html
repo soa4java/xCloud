@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>文件管理</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="node_modules/layui-src/dist/css/layui.css">
+    <script type="text/javascript" src="node_modules/jquery/dist/jquery.min.js"></script>
+    <script type="text/javascript" src="node_modules/layui-src/dist/layui.all.js"></script>
+    <script>
+        function changeFileStatus(file_status, file_id) {
+
+            var tipmsg = "";
+            if (file_status == 0)
+                tipmsg = "是否真的共享本文件？";
+            else
+                tipmsg = "是否真的私有本文件？";
+            layer.confirm(tipmsg, {
+                    icon: 3,
+                    btn: ['是', '否']
+                },
+                function () {
+                    $.ajax({
+                        url: "file/updateFileStatus.do",
+                        method: "post",
+                        data: {
+                            "file_status": file_status,
+                            "file_id": file_id
+                        },
+                        beforeSend:function(){
+                            $("#icon_loading").html("<span class='layui-icon layui-icon-loading'></span>");
+                        },
+                        complete: function(){
+                            // alert('远程调用成功，状态文本值：'+textStatus);
+                            $("#icon_loading").empty();
+                        },
+                        success: function (data) {
+                            if (data == 1 && file_status == 1)
+                                layer.msg('文件已私有！', {icon: 1});
+                            if (data == 1 && file_status == 0)
+                                layer.msg('文件已共享！', {icon: 1});
+                        }, error: function () {
+                            layer.msg('请求服务器失败！', {icon: 2});
+                        }
+                    });
+
+                }, function () {
+                    window.location.reload();//刷新当前页面
+                }
+            );
+        }
+
+        function deleteFileInfoById(file_id) {
+            layer.confirm('是否要真的删除选中数据？', {
+                    btn: ['确定', '取消'] //按钮
+                }, function () {
+                    $.ajax({
+                        url: "file/deleteOneFileById.do",
+                        data: {"file_id": file_id},
+                        method: "post",
+                        success: function (data) {
+                            if (data > 0)
+                                layer.msg("成功删除" + data + "个文件", {icon: 1});
+                            else
+                                layer.msg('文件删除失败', {icon: 2});
+                            /*数据删除成功后刷新表格*/
+                            layui.table.reload("id", {
+                                where: {
+                                    "file_upload_user": sessionStorage.getItem("user_id")
+                                }
+                            });
+                        },
+                        error: function () {
+                            layer.msg('请求服务器失败！', {icon: 1});
+                        }
+                    });
+                }
+            );
+        }
+
+        $(function () {
+            //第一次获取前10条
+            getUserFile(1, 10);
+            // alert( sessionStorage.getItem("user_id"));
+            layui.table.on("edit(filetable)", function (rs) {
+                $.ajax({
+                    url: "file/updateFileName.do",
+                    method: "get",
+                    data: {"obj": JSON.stringify(rs.data)},
+                    success: function (data) {
+                        if (data == 0)
+                            layer.msg("编辑" + rs.data.file_name + "失败");
+                        else
+                            layer.msg("编辑" + rs.data.file_name + "成功");
+                    },
+                    error: function () {
+                        layer.msg("请求服务器失败！");
+                    }
+                });
+            });
+        });
+
+        function previewFile(the_file_path){
+            layui.use('layer', function(){ //独立版的layer无需执行这一句
+                var $ = layui.jquery, layer = layui.layer; //独立版的layer无需执行这一句
+
+                //触发事件
+                var active = {
+                    offset: function(othis){
+                        var type = othis.data('type')
+                            ,text = othis.text();
+                        layer.open({
+                            type: 1
+                            ,offset: type
+                            ,id: 'layerDemo'+type //防止重复弹出
+                            ,content: "<div style=\"padding: 20px 100px;\"><img src=\""+the_file_path+"\"/></div>"
+                            ,btn: '关闭全部'
+                            ,btnAlign: 'c' //按钮居中
+                            ,shade: 0 //不显示遮罩
+                            ,yes: function(){
+                                layer.closeAll();
+                            }
+                        });
+                    }
+                };
+
+                $('#layerDemo .layui-btn').on('click', function(){
+                    var othis = $(this), method = othis.data('method');
+                    active[method] ? active[method].call(this, othis) : '';
+                });
+
+            });
+        }
+
+        $(function () {
+            //第一次获取前10条
+            getUserFile(1, 10);
+            // alert( sessionStorage.getItem("user_id"));
+            layui.table.on("edit(filetable)", function (rs) {
+                $.ajax({
+                    url: "file/updateFileName.do",
+                    method: "get",
+                    data: {"obj": JSON.stringify(rs.data)},
+                    beforeSend:function(){
+                        $("#icon_loading").html("<span class='layui-icon layui-icon-loading'></span>");
+                    },
+                    complete: function(){
+                        // alert('远程调用成功，状态文本值：'+textStatus);
+                        $("#icon_loading").empty();
+                    },
+                    success: function (data) {
+                        if (data == 0)
+                            layer.msg("编辑" + rs.data.file_name + "失败");
+                        else
+                            layer.msg("编辑" + rs.data.file_name + "成功");
+                    },
+                    error: function () {
+                        layer.msg("请求服务器失败！");
+                    }
+                });
+            });
+        });
+        // 获取用户文件列表
+        function getUserFile(page, pagesize) {
+            layui.use("table", function () {
+                layui.table.render({
+                    elem: "#file_manager_table",
+                    url: "search.do",
+                    title: "个人文件列表",
+                    where: {
+                        "file_upload_user": sessionStorage.getItem("user_id"),
+                        "searchInput": sessionStorage.getItem("searchInput")
+                    },
+                    page: true,
+                    //  limit: pagesize,
+                    id: "id",//自己起名
+                    size: "md",
+                    toolbar: '#tbl_toolbar',
+                    limits: [10, 20, 50, 100],
+                    loading: true,
+                    even: true,
+                    cols: [[
+                        {field: "file_id", title: "ID", align: "center", type: "checkbox"},
+                        {field: "", title: "序号", type: "numbers"},
+                        {
+                            field: "file_name", title: "预览", width: 100, align: "center", templet: function (row) {
+                                return "<div class=\"site-demo-button\" id=\"layerDemo\"><a href=\"javascript:previewFile(\'myphoto/file_resources"+row.file_path+"/"+row.file_name+"\')\" data-method=\"offset\" data-type=\"auto\" class=\"layui-btn layui-btn-sm\">预览</a></div>"
+                            }
+                        },
+                        {field: "file_name", title: "文件名", edit: "text", totalRow: true},
+                        {
+                            field: "file_type", title: "文件类型", width: 100, align: "center",
+                            templet: function (row) {
+                                if (row.file_type == "isVideo") {
+                                    return "<span class='layui-icon layui-icon-video'></span> 视频";
+                                }
+                                if (row.file_type == "isAudio") {
+                                    return "<span class='layui-icon layui-icon-speaker'></span> 音频";
+                                }
+                                if (row.file_type == "isPicture") {
+                                    return "<span class='layui-icon layui-icon-picture'></span> 图片";
+                                }
+                                if (row.file_type == "isDocument") {
+                                    return "<span class='layui-icon layui-icon-file'></span> 文档";
+                                }
+                                if (row.file_type == "isOthers") {
+                                    return "<span class='layui-icon layui-icon-component'></span> 其他";
+                                }
+                            }
+                        },
+                        {
+                            field: "file_size", title: "大小", sort: true, width: 100, align: "center",
+                            templet: function (row) {
+                                return (row.file_size) + "KB";
+                            }
+                        },
+                        {
+                            field: "file_upload_time", title: "上传时间", width: 200, align: "center",
+                            templet: function (row) {
+
+                                return new Date(row.file_upload_time).toLocaleString();
+                            }
+                        },
+                        {
+                            field: "file_status", title: "权限", width: 100, align: "center",
+                            templet: function (row) {
+                                if ((row.file_status == 1))
+                                    return "<a href='javascript:changeFileStatus(1," + row.file_id + ")'>" +
+                                        "<input name='role'   type='checkbox' lay-skin='switch'   lay-text='共享|私有' value='1' checked></a>";
+                                else
+                                    return "<a href='javascript:changeFileStatus(0," + row.file_id + ")'>" +
+                                        "<input name='role'  type='checkbox' lay-skin='switch'  lay-text='共享|私有' value='0'></a>";
+
+                            }
+                        },
+                        {
+                            field: "downloadCount", title: "下载次数", align: "center", width: 100,
+                            templet:function(row){
+                                return row.downloadCount+"次"
+                            }
+                        },
+                        {
+                            field: "file_action", title: "操作", width: 100, align: "center",
+                            templet: function (row) {
+                                var deletefile = "<a href='javascript:deleteFileInfoById(" + row.file_id + ")' title='删除' class='layui-badge' ><span class='layui-icon layui-icon-delete'></span></a>";
+                                var downloadfile = "<a href='file/downloadFile.do?filePath=" + row.file_path + "&fileName=" + row.file_name + "&file_id="+row.file_id+"' title='下载' class='layui-badge layui-bg-green' ><span class='layui-icon layui-icon-download-circle'></span></a>";
+                                return deletefile + " " + downloadfile;
+                            }
+                        }
+                    ]]
+                });
+                layui.table.on("toolbar(filetable)", function (rs) {
+                    var event = rs.event;
+                    if (event == "add") {
+                        layer.msg(event);
+                    }
+                    if (event == "delete") {
+                        var tableselectdate = layui.table.checkStatus("id").data;
+                        var arr = new Array();
+                        $.each(tableselectdate, function (index, row, rs) {
+                            arr[index] = row.file_id;
+                        });
+                        // alert(JSON.stringify(arr));
+                        if (arr.length == 0) {
+                            layer.msg("请选择一行数据");
+                        } else {
+                            layer.confirm('是否要真的删除选中数据？', {
+                                btn: ['确定', '取消'], //按钮
+                                btnAlign: 'c'  //按钮居中显示
+                            }, function () {
+                                // layer.msg(JSON.stringify(arr), {icon: 1});
+                                $.ajax({
+                                    url: "file/deleteFileById.do",
+                                    data: {"file_id": JSON.stringify(arr)},
+                                    method: "post",
+                                    success: function (data) {
+                                        if (data > 0)
+                                            layer.msg("成功删除" + data + "个文件", {icon: 1});
+                                        else
+                                            layer.msg('文件删除失败', {icon: 2});
+                                        /*数据删除成功后刷新表格*/
+                                        layui.table.reload("id", {
+                                            where: {
+                                                "file_upload_user": sessionStorage.getItem("user_id")
+                                            }
+                                        });
+                                    },
+                                    error: function () {
+                                        layer.msg('请求服务器失败！', {icon: 1});
+                                    }
+                                });
+                            });
+                            //layer.msg(JSON.stringify(arr));
+                        }
+                    }
+                });
+
+            });
+        }
+
+        function changeRole(row) {
+            var obj = JSON.parse(row)
+            layer.msg(obj.file_id + "," + file_status);
+        }
+
+
+
+    </script>
+
+
+</head>
+<body>
+<script type="text/html" id="tbl_toolbar">
+
+    <div class="layui-block">
+        筛选
+        <input type="checkbox" name="" title="视频" checked="checked">
+        <input type="checkbox" name="" title="图片" checked="checked">
+        <input type="checkbox" name="" title="音频" checked="checked">
+        <input type="checkbox" name="" title="文档" checked="checked">
+        <button class="layui-btn layui-btn-danger" lay-event="delete" style="margin-left: 50px">
+            <i class="layui-icon">&#xe640;</i> 批量删除
+        </button>
+
+    </div>
+
+</script>
+<div id="icon_loading"></div>
+<table id="file_manager_table" lay-filter="filetable"></table>
+</body>
+</html>

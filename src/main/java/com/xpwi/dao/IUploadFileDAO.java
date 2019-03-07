@@ -1,0 +1,1 @@
+package com.xpwi.dao;import java.util.Map;public interface IUploadFileDAO {    int uploadPhoto(String userid,String photoPath);    Map<String,Object> findFilePathById(String file_dir_id);    int insertUploadFileInfo(Map map);}

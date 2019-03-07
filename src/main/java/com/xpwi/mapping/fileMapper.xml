@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--动态sql-->
+<mapper namespace="com.xpwi.mapping.File">
+
+    <select id="findUseFile" parameterType="map"  resultType="map">
+        select file_id,file_size,file_upload_time,file_status,downloadCount, dir_name,file_name,file_type,
+        CONCAT(dir_path,dir_name) as file_path
+        FROM file_info INNER JOIN dir_info on file_info.file_dir_id=dir_info.dir_id
+        <where>
+            <if test="user_id!=null">
+                and  file_upload_user_id=#{user_id}
+            </if>
+            <if test="fileType!='null'">
+                and   file_type=#{fileType}
+            </if>
+            <if test="isShare!='null'">
+                and   file_status=#{isShare}
+            </if>
+        </where>
+        <if test="page!=null and limit!=null">
+            limit #{page},#{limit}
+        </if>
+    </select>
+    <select id="findRSCount" parameterType="map" resultType="map">
+        select count(*) as `count` from file_info
+        <where>
+            <if test="file_upload_user!=null">
+                file_upload_user_id=#{file_upload_user}
+            </if>
+        </where>
+    </select>
+
+    <update id="updateFileName" parameterType="map" >
+        update file_info set file_name=#{file_name} where file_id=#{file_id}
+    </update>
+    <update id="updateFileStatus" parameterType="map" >
+        <if test="file_status==1">
+            update file_info set file_status=0 where file_id=#{file_id}
+        </if>
+        <if test="file_status==0">
+            update file_info set file_status=1 where file_id=#{file_id}
+        </if>
+    </update>
+    <delete id="deleteFileById" parameterType="java.util.List">
+        delete from file_info where file_id in (
+        <foreach collection="list" item="item" separator=",">
+            #{item}
+        </foreach>
+        )
+    </delete>
+
+    <update id="updateDownloadCount" parameterType="int">
+        update file_inf set downloadCount=downloadCount+1 where file_id=#{file_id}
+    </update>
+</mapper>

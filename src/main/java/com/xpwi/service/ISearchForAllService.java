@@ -1,0 +1,1 @@
+package com.xpwi.service;import java.util.List;import java.util.Map;public interface ISearchForAllService {    List<Map<String,String>> searchForAll(String str);}

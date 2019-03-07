@@ -1,0 +1,1 @@
+package com.xpwi.service;import java.util.Map;public interface IUploadFileService {    int uploadPhoto(String userid,String photoPath);    Map<String,Object> findFilePathById(String dir_id);    int insertUploadFileInfo(Map map);}

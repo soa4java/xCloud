@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xpwi.mapping.User">
+    <update id="updateUserStatus" parameterType="map">
+        update user_info set `status`=#{user_status} where user_id=#{user_id}
+    </update>
+    <select id="login" parameterType="map" resultType="map">
+        select * from user_info where username=#{uname} and password=#{upwd}
+    </select>
+    <select id="loginByEmail" parameterType="map" resultType="map">
+        select * from user_info where email=#{user_email}
+    </select>
+    <insert id="register" parameterType="map">
+        insert into user_info(username,`password`,email,register_time,user_type,status)
+        values(#{uname},#{upwd},#{email},now(),'user',0)
+    </insert>
+    <select id="validateOldPwd" parameterType="map" resultType="map">
+        select * from user_info where user_id=#{userid} and `password`=#{oldpwd}
+    </select>
+    <update id="updateOldPwd" parameterType="map">
+        update user_info set `password`=#{newpwd} where user_id=#{userid}
+    </update>
+    <select id="findUserInfoById" parameterType="string" resultType="map">
+        select a.user_id,a.username,b.runame,b.gender,b.birthday,
+        b.address,b.remark,b.telephone,a.head,a.email from user_info a
+        INNER JOIN user_detail_info b on a.user_id=b.user_id where a.user_id=#{user_id}
+     </select>
+    <update id="updateUserInfo" parameterType="com.xpwi.pojo.UserInfo">
+        update user_detail_info set runame=#{runame},gender=#{gender},birthday=#{birthday}
+        ,address=#{address},telephone=#{telephone},remark=#{remark}
+         where user_id=#{user_id}
+    </update>
+    <select id="userStatusAnalysis" resultType="map">
+      select CASE `status`
+	WHEN 1 THEN
+		'激活'
+	ELSE
+		'未激活'
+    END as `status`
+    ,count(*) as count from user_info GROUP BY `status`
+    </select>
+
+    <select id="newUserManager" parameterType="map"  resultType="map">
+        select * FROM user_info
+        <where>
+            <if test="user_type!='null'">
+                status=#{user_status}
+            </if>
+        </where>
+        <if test="page!=null and limit!=null">
+            limit #{page},#{limit}
+        </if>
+    </select>
+
+</mapper>

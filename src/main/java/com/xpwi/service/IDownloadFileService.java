@@ -1,0 +1,1 @@
+package com.xpwi.service;public interface IDownloadFileService {    int updateDownloadCount(int file_id);}

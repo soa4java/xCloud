@@ -1,0 +1,1 @@
+package com.xpwi.dao;public interface IDownloadFileDAO {    int updateDownloadCount(int file_id);}

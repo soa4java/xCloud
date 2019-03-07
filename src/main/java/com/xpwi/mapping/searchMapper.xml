@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xpwi.mapping.search">
+
+    <select id="searchForAll" parameterType="map"  resultType="map">
+        select file_id,file_size,file_upload_time,file_status,downloadCount, dir_name,file_name,file_type,
+        CONCAT(dir_path,dir_name) as file_path
+        FROM file_info INNER JOIN dir_info on file_info.file_dir_id=dir_info.dir_id
+        where file_name like "%${name_str}%"
+    </select>
+
+</mapper>
