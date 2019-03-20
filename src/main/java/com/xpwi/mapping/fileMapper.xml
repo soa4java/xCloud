@@ -5,19 +5,24 @@
 <!--动态sql-->
 <mapper namespace="com.xpwi.mapping.File">
 
-    <select id="findUseFile" parameterType="map"  resultType="map">
+    <select id="findUseFile" parameterType="map" resultType="map">
         select file_id,file_size,file_upload_time,file_status,downloadCount, dir_name,file_name,file_type,
         CONCAT(dir_path,dir_name) as file_path
         FROM file_info INNER JOIN dir_info on file_info.file_dir_id=dir_info.dir_id
         <where>
             <if test="user_id!=null">
-                and  file_upload_user_id=#{user_id}
+                and file_upload_user_id=#{user_id}
             </if>
             <if test="fileType!='null'">
-                and   file_type=#{fileType}
+                and file_type=#{fileType}
             </if>
             <if test="isShare!='null'">
-                and   file_status=#{isShare}
+                <if test="isShare==0">
+                    and file_status=#{isShare}
+                </if>
+                <if test="isShare==1">
+                    or file_status=#{isShare}
+                </if>
             </if>
         </where>
         <if test="page!=null and limit!=null">
@@ -33,10 +38,10 @@
         </where>
     </select>
 
-    <update id="updateFileName" parameterType="map" >
+    <update id="updateFileName" parameterType="map">
         update file_info set file_name=#{file_name} where file_id=#{file_id}
     </update>
-    <update id="updateFileStatus" parameterType="map" >
+    <update id="updateFileStatus" parameterType="map">
         <if test="file_status==1">
             update file_info set file_status=0 where file_id=#{file_id}
         </if>

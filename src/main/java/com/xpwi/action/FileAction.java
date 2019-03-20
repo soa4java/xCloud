@@ -29,10 +29,9 @@ public class FileAction {
         map.put("limit", limit);
 
         List<Map<String, Object>> maps = fileServiceImpl.fileUserFile(map);
-        int count = Integer.parseInt(maps.get(maps.size() - 1).get("count").toString());
         maps.remove(maps.size() - 1);
         Map map1 = new HashMap();
-        map1.put("count", count);
+        map1.put("count", maps.size());
         map1.put("data", maps);
         if (maps != null)
             map1.put("msg", "查询成功");
