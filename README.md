@@ -19,7 +19,7 @@ SSM+LayUI 实现的网络云盘项目
 
 ### 开发笔记
 
- - [SSM+LayUI 项目实训笔记](https://blog.csdn.net/qq_40147863/article/category/8577666)
+ - [SSM+LayUI 网盘项目实训笔记](https://blog.csdn.net/qq_40147863/article/category/8577666)
 
 ### 功能说明脑图
 
