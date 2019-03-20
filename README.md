@@ -4,8 +4,12 @@ SSM+LayUI 实现的网络云盘项目
 
 ### 项目部署地址
 
- - http://106.13.99.76:8080/xcloud
+ - <a href="http://106.13.99.76:8080/xcloud" target="_blank">http://106.13.99.76:8080/xcloud</a>
  - 默认进入登录页面，点击 LOGO 可进入前台页面，登陆后进入网盘主界面
+ 
+### 数据库文件
+
+ - []()
 
 ### 测试用户
 
@@ -15,7 +19,8 @@ SSM+LayUI 实现的网络云盘项目
 
 ### 项目运行视频（腾讯视频在线）
 
- - http://m.v.qq.com/play/play.html?vid=x08468vj2mm&ptag=4_6.7.0.22106_copy
+ - <a href="http://m.v.qq.com/play/play.html?vid=x08468vj2mm&ptag=4_6.7.0.22106_copy" target="_blank">http://m.v.qq.com/play/play.html?vid=x08468vj2mm&ptag=4_6.7.0.22106_copy</a>
+
 
 ### 功能说明脑图
 
